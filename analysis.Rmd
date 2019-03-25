@@ -1,0 +1,116 @@
+---
+title: "analysis.Rmd"
+author: "Corinne Wilkinson"
+date: "3/25/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(dplyr)
+immigration_data <- read_csv("1845_immigration_data.csv")
+```
+```{r}
+# Background: (http://ghf.destinationnext.com/immigration/Search.aspx) This data is taken from immigration records at the Port of Galveston, TX. These records have been digitized by the Galveston Historical Society from microfilm at NARA for community members to conduct genealogy research and find their family origins. The data cannot be downloaded from the site and is not in a format that I can't figure out how to scrape so I've been transcribing by hand. Its a slow process, but I hope to eventually capture all the records from at least 3 years for analysis and use this as a basis for my final project.
+
+#As part of an effort to colonize the Republic Texas, in 1844 a land grant totaling over 5,000 square miles was sold to a German colonization company, Adelsverein. Following this deal, a wave of German immigrants immigrated to Texas. The database includes names of passengers and members of their traveling parties, age, gender, occupation, country of origin, ship name, dates of departure and arrival, and destination in the United States. I hope to examine this data to determine broader trends in this migration: Who came to Texas? Were they from the same area of Germany? Did trends in this migration change over time? 
+
+#Note: My data is in two parts, linked by family ID-- immigration_data has information on geographical information, and immigration_family has information demographical information. So far, I've just transcribed family data for one ship.
+
+```
+
+
+#Exploring immigration_data
+```{r}
+print(immigration_data)
+nrow(immigration_data)
+ncol(immigration_data)
+str(immigration_data)
+```
+```{r}
+#Exploring immigration_family
+
+immigration_family <- read_csv("immigration_family.csv")
+
+print(immigration_family)
+nrow(immigration_family)
+ncol(immigration_family)
+str(immigration_family)
+```
+
+```{r}
+library(dplyr)
+
+#How many people were involved?
+
+immigration_data %>% 
+  ggplot(aes(x=vessel))+
+  geom_bar()
+  
+
+```
+```{r}
+#Where did these people come from?
+
+immigration_data %>% 
+  select(origin_city, origin_country) %>% 
+  ggplot(aes(x=origin_city, color=origin_country)) + 
+  geom_bar() +
+  coord_flip()+
+  theme_classic()
+
+#This is interesting because I assumed most people would be from Germany and one person lists their origin as France. I'm also not an expert on this time period, so I would need to investigate further the division between Germany/Prussia at this time (1845).
+```
+```{r}
+#I'm also interested in seeing where families were headed-- This database only records immigrants who sailed directly from Bremen to Galveston so they all seem to have a final destination in Texas. 
+
+immigration_data %>% 
+  ggplot(aes(x=destination, color=vessel)) + 
+  geom_bar() +
+  coord_flip()+
+  theme_classic()
+
+#I found this interesting-- everyone on the Armenius and Alberdina stated they were headed to the Fisher-Miller Grant, while on the Apollo people listed a variety of destinations.
+
+```
+
+```{r}
+#Records are grouped by family. What was the average family size to come to Galveston? I'm curious whether it was entire families moving or single men looking for work.
+
+immigration_data %>% 
+  ggplot()+
+  geom_boxplot(aes(x=vessel, y=members))
+
+```
+```{r}
+
+#Here I'm looking at age distribution by gender 
+immigration_family %>% 
+  group_by(family_id) %>% 
+  ggplot()+
+  geom_boxplot(aes(x=sex, y=age))
+
+#and gender distribution by itself 
+immigration_family %>% 
+  ggplot()+
+  geom_bar(aes(x=sex))
+
+```
+
+```{r}
+immigration_data %>% 
+  left_join(immigration_family, by = "family_id")
+
+```
+
+
+
+
+```{r}
+#So far, my biggest limitations in my data appear to be the high number of missing values and the small number of observations I've recorded. In order to see how some of these variables have changed over time I'll need to have more records from years other than 1845. Overall, I'm satisfied that this data is in a format that will allow me to answer the types of questions I want to explore.
+
+
+```
+
+
